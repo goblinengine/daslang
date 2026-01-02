@@ -27,14 +27,15 @@ public:
 	void finish() override;
 
 	/* EDITOR FUNCTIONS */
-	void get_reserved_words(List<String> *p_words) const override;
-	bool is_control_flow_keyword(String p_keyword) const override;
-	void get_comment_delimiters(List<String> *p_delimiters) const override;
-	void get_doc_comment_delimiters(List<String> *p_delimiters) const override { /* TODO */ }
-	void get_string_delimiters(List<String> *p_delimiters) const override;
+	Vector<String> get_reserved_words() const override;
+	bool is_control_flow_keyword(const String &p_keyword) const override;
+	Vector<String> get_comment_delimiters() const override;
+	Vector<String> get_doc_comment_delimiters() const override;
+	Vector<String> get_string_delimiters() const override;
 	Ref<Script> make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const override;
-	Vector<ScriptLanguage::ScriptTemplate> get_built_in_templates(StringName p_object) override;
+	Vector<ScriptLanguage::ScriptTemplate> get_built_in_templates(const StringName &p_object) override;
 	bool is_using_templates() override { return true; }
+	bool supports_documentation() const override { return false; }
 	// TODO put it inside GodotContext maybe?
 	static Variant call_function(das::SimFunction *func, das::Context *ctx, void* self, const char* name, const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	static das::ProgramPtr compile_script(const String& p_source, const String& p_path, das::FileAccessPtr p_access, das::TextPrinter& p_logs, das::ModuleGroup& p_libs);
@@ -65,6 +66,7 @@ public:
 	Vector<StackInfo> debug_get_current_stack_info() override { /* TODO */ return Vector<StackInfo>(); }
 
 	void reload_all_scripts() override { /* TODO */ }
+	void reload_scripts(const Array &p_scripts, bool p_soft_reload) override;
 	void reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) override;
 
 	/* LOADER FUNCTIONS */
@@ -76,15 +78,16 @@ public:
 	/* PROFILING FUNCTIONS */
 	void profiling_start() override { /* TODO */ }
 	void profiling_stop() override { /* TODO */ }
+	void profiling_set_save_native_calls(bool p_enable) override { /* TODO */ }
 
-	int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override { /* TODO */ }
-	int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override { /* TODO */ }
+	int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) override { /* TODO */ return 0; }
+	int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) override { /* TODO */ return 0; }
 
 	void frame() override { /* TODO */ }
 
 	/* GLOBAL CLASSES */
 	bool handles_global_class_type(const String &p_type) const override;
-	String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const override { /* TODO */ return String(); }
+	String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, bool *r_is_abstract = nullptr, bool *r_is_tool = nullptr) const override { /* TODO */ return String(); }
 
 };
 

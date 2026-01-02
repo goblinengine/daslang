@@ -51,6 +51,17 @@ struct escape<double> : default_return<float>{
 };
 
 #include "core/variant/typed_array.h"
+#include "core/variant/required_ptr.h"
+
+namespace das {
+    template <typename T>
+    struct cast<RequiredParam<T>> : cast<T *> {};
+
+    template <typename T>
+    struct typeFactory<RequiredParam<T>> {
+        static TypeDeclPtr make(const ModuleLibrary &lib) { return makeType<T *>(lib); }
+    };
+}
 
 template <typename T>
 struct escape<TypedArray<T>> {
@@ -93,7 +104,8 @@ template<>
 struct escape<const String&> {
     typedef const char* type;
     _FORCE_INLINE_ const char * ret(const String& t, das::Context *ctx) {
-        return ctx->stringHeap->allocateString(t.utf8().get_data());
+        CharString utf8 = t.utf8();
+        return ctx->allocateString(utf8.get_data(), utf8.length(), nullptr);
     }
 };
 
@@ -103,7 +115,8 @@ template<>
 struct escape<StringName> {
     typedef const char* type;
     _FORCE_INLINE_ static const char * ret(const StringName& t, das::Context *ctx) {
-        return ctx->stringHeap->allocateString(String(t).utf8().get_data());
+        CharString utf8 = String(t).utf8();
+        return ctx->allocateString(utf8.get_data(), utf8.length(), nullptr);
     }
 };
 

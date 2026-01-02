@@ -3,7 +3,7 @@
 #include "init_daslang.h"
 
 #include "core/config/engine.h"
-#include "editor/editor_settings.h"
+#include "editor/settings/editor_settings.h"
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
@@ -68,8 +68,8 @@ void DasScriptLanguage::finish() {
 
 /* EDITOR FUNCTIONS */
 
-void DasScriptLanguage::get_reserved_words(List<String> *p_words) const {
-    // copypasted table from https://dascript.org/doc/reference/language/lexical_structure.html#keywords
+Vector<String> DasScriptLanguage::get_reserved_words() const {
+    // Copied from https://dascript.org/doc/reference/language/lexical_structure.html#keywords
     static const char *keywords[] = {
         "struct",      "class",       "let",       "def",       "while",    "if",
         "static_if",   "else",        "for",       "recover",   "true",     "false",
@@ -84,16 +84,14 @@ void DasScriptLanguage::get_reserved_words(List<String> *p_words) const {
         "assume",      "explicit",    "sealed",    nullptr
 	};
 
-    const char **w = keywords;
-
-	while (*w) {
-		p_words->push_back(*w);
-		w++;
-	}
-    // TODO add types?
+    Vector<String> words;
+    for (const char **w = keywords; *w; ++w) {
+        words.push_back(*w);
+    }
+    return words;
 }
 
-bool DasScriptLanguage::is_control_flow_keyword(String p_keyword) const {
+bool DasScriptLanguage::is_control_flow_keyword(const String &p_keyword) const {
     return
         // branches
         p_keyword == "if" ||
@@ -118,13 +116,21 @@ bool DasScriptLanguage::is_control_flow_keyword(String p_keyword) const {
         p_keyword == "pass";
 }
 
-void DasScriptLanguage::get_comment_delimiters(List<String> *p_delimiters) const {
-    p_delimiters->push_back("/* */"); // Block comment
-	p_delimiters->push_back("//"); // Single-line comment
+Vector<String> DasScriptLanguage::get_comment_delimiters() const {
+    Vector<String> delimiters;
+    delimiters.push_back("/* */");
+    delimiters.push_back("//");
+    return delimiters;
 }
 
-void DasScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
-    p_delimiters->push_back("\" \"");
+Vector<String> DasScriptLanguage::get_doc_comment_delimiters() const {
+    return {};
+}
+
+Vector<String> DasScriptLanguage::get_string_delimiters() const {
+    Vector<String> delimiters;
+    delimiters.push_back("\" \"");
+    return delimiters;
 }
 
 Ref<Script> DasScriptLanguage::make_template(const String &p_template, const String &p_class_name, const String &p_base_class_name) const {
@@ -139,7 +145,7 @@ Ref<Script> DasScriptLanguage::make_template(const String &p_template, const Str
 	return new_script;
 }
 
-Vector<ScriptLanguage::ScriptTemplate> DasScriptLanguage::get_built_in_templates(StringName p_object) {
+Vector<ScriptLanguage::ScriptTemplate> DasScriptLanguage::get_built_in_templates(const StringName &p_object) {
 	Vector<ScriptLanguage::ScriptTemplate> templates;
 #ifdef TOOLS_ENABLED
 	for (int i = 0; i < DAS_TEMPLATES_ARRAY_SIZE; i++) {
@@ -152,6 +158,7 @@ Vector<ScriptLanguage::ScriptTemplate> DasScriptLanguage::get_built_in_templates
 }
 
 Variant DasScriptLanguage::call_function(das::SimFunction *func, das::Context *ctx, void* self, const char* name, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+    r_error.error = Callable::CallError::CALL_OK;
 	std::vector<vec4f> arguments;
 	arguments.push_back(das::cast<void*>::from(self));
 	for (int i = 0; i < p_argcount; i++) {
@@ -181,6 +188,15 @@ Variant DasScriptLanguage::call_function(das::SimFunction *func, das::Context *c
 		_err_print_error(name, fileinfo_name, ctx->exceptionAt.line, exception, false, ERR_HANDLER_SCRIPT);
 	}
     return Variant();
+}
+
+void DasScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
+    for (int i = 0; i < p_scripts.size(); i++) {
+        Ref<Script> scr = p_scripts[i];
+        if (scr.is_valid()) {
+            scr->reload(p_soft_reload);
+        }
+    }
 }
 
 das::ProgramPtr DasScriptLanguage::compile_script(const String& p_source, const String& p_path, das::FileAccessPtr p_access, das::TextPrinter& p_logs, das::ModuleGroup& p_libs) {

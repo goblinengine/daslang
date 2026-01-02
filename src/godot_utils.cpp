@@ -118,8 +118,8 @@ void load_simple(const char* path, const das::TBlock<void, das::TTemporary<Resou
     ctx->invoke(blk, &args, nullptr, at);
 }
 
-void load_full(const char* path, const char *p_type_hint, core_bind::ResourceLoader::CacheMode p_cache_mode, const das::TBlock<void, das::TTemporary<Resource*>>& blk, CTX_AT) {
-    // why on earth are there two identical enums??? core_bind::ResourceLoader::CacheMode and ResourceFormatLoader::CacheMode
+void load_full(const char* path, const char *p_type_hint, CoreBind::ResourceLoader::CacheMode p_cache_mode, const das::TBlock<void, das::TTemporary<Resource*>>& blk, CTX_AT) {
+    // why on earth are there two identical enums??? CoreBind::ResourceLoader::CacheMode and ResourceFormatLoader::CacheMode
     Ref<Resource> resource = ResourceLoader::load(path, p_type_hint, static_cast<ResourceFormatLoader::CacheMode>(p_cache_mode));
     vec4f args = {das::cast<void*>::from(resource.ptr())};
     ctx->invoke(blk, &args, nullptr, at);

@@ -6,17 +6,18 @@
 #include "core/os/os.h"
 #include "core/error/error_macros.h"
 #include "core/config/project_settings.h"
+#include "core/io/file_access.h"
 
 
 class GodotContext : public das::Context {
 public:
-	GodotContext(uint32_t stackSize = 16*1024, bool ph = false) : Context(stackSize, ph) { }
-	void to_out(const das::LineInfo *, const char * message) override {
-        __print_line(message);
-    }
-	void to_err(const das::LineInfo *, const char * message) override {
-        print_error(message);
-    }
+	GodotContext(uint32_t stackSize = 16 * 1024, bool ph = false) : Context(stackSize, ph) {}
+	void to_out(const das::LineInfo *, int, const char *message) override {
+		__print_line(message);
+	}
+	void to_err(const das::LineInfo *, const char *message) override {
+		print_error(message);
+	}
 };
 
 DasScript::DasScript() : script_list(this) {
@@ -45,7 +46,7 @@ void DasScript::free_instance(DasScriptInstance *p_instance) {
 	}
 	int offset = get_field_offset("__finalize");
 	if (offset == INVALID_OFFSET) { return; }
-	char* class_ptr = p_instance->get_class_ptr();
+	char *class_ptr = p_instance->get_class_ptr();
 
 	auto func_ptr = reinterpret_cast<das::Func*>(class_ptr + offset)->PTR;
 	vec4f args[] = {das::cast<void*>::from(class_ptr)};
@@ -56,7 +57,7 @@ void DasScript::free_instance(DasScriptInstance *p_instance) {
 		const char* fileinfo_name = ctx->exceptionAt.fileInfo ? ctx->exceptionAt.fileInfo->name.c_str() : "(no file)";
 		_err_print_error("finalize", fileinfo_name, ctx->exceptionAt.line, exception, false, ERR_HANDLER_SCRIPT);
 	}
-	ctx->heap->free(p_instance->get_class_ptr(), main_structure->getSizeOf64());
+	ctx->free(p_instance->get_class_ptr(), main_structure->getSizeOf64());
 }
 
 size_t DasScript::get_func_offset(const StringName &p_field) const {
@@ -92,7 +93,7 @@ ScriptInstance *DasScript::instance_create(Object *p_this) {
 	instance->set_script(Ref<DasScript>(this));
 	instance->set_owner(p_this);
 
-	char* class_ptr = ctx->heap->allocate(main_structure->getSizeOf64());
+	char *class_ptr = ctx->allocate(main_structure->getSizeOf64());
 	instance->set_class_ptr(class_ptr);
 	vec4f args[1];
 	// TODO cache "__instance_ctor", "finalize" and "native" fields because they could be called a lot
@@ -285,10 +286,7 @@ Error DasScript::load_source_code(const String &p_path) {
 	ERR_FAIL_COND_V(r != len, ERR_CANT_OPEN);
 	w[len] = 0;
 
-	String s;
-	if (s.parse_utf8((const char *)w) != OK) {
-		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
-	}
+	String s = String::utf8((const char *)w, (int)len);
 
 	set_source_code(s);
 

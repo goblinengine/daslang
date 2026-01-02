@@ -3,6 +3,8 @@
 #include "das_script.h"
 #include "das_script_language.h"
 
+#include "core/io/file_access.h"
+
 #include "init_daslang.h"
 
 // analogically to GDScriptCache::get_full_script

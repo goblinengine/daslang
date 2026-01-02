@@ -13,8 +13,8 @@ template <> struct das::cast<Color> : das::cast_fVec<Color> {};
 
 #include "core/core_bind.h"
 
-DAS_BIND_ENUM_CAST(core_bind::ResourceLoader::CacheMode)
-DAS_BASE_BIND_ENUM_SAFE(core_bind::ResourceLoader::CacheMode, ResourceLoader`CacheMode, ResourceLoader_CacheMode, CACHE_MODE_IGNORE, CACHE_MODE_REUSE, CACHE_MODE_REPLACE)
+DAS_BIND_ENUM_CAST(CoreBind::ResourceLoader::CacheMode)
+DAS_BASE_BIND_ENUM_SAFE(CoreBind::ResourceLoader::CacheMode, ResourceLoader`CacheMode, ResourceLoader_CacheMode, CACHE_MODE_IGNORE, CACHE_MODE_REUSE, CACHE_MODE_REPLACE)
 
 #include "core/variant/variant_utility.h"
 #include "core/config/engine.h"

@@ -66,6 +66,7 @@ public:
 	Error reload(bool p_keep_state = false) override;
 
 #ifdef TOOLS_ENABLED
+	StringName get_doc_class_name() const override { return StringName(); }
 	Vector<DocData::ClassDoc> get_documentation() const override { /* TODO */ return Vector<DocData::ClassDoc>{}; }
 	String get_class_icon_path() const override { /* TODO */ return String(); }
 #endif
